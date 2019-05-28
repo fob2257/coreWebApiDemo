@@ -37,12 +37,12 @@ namespace coreWebApiDemo
             //services.AddTransient<ClassService>();
             services.AddTransient<IClassService, ClassService>();
 
-            //// caching
-            //services.AddResponseCaching();
+            // caching
+            services.AddResponseCaching();
 
-            //// authentication
-            //services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            //    .AddJwtBearer();
+            // authentication
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                 .AddJsonOptions(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
@@ -62,10 +62,10 @@ namespace coreWebApiDemo
             }
 
             app.UseHttpsRedirection();
-            //// caching
-            //app.UseResponseCaching();
-            //// authentication
-            //app.UseAuthentication();
+            // caching
+            app.UseResponseCaching();
+            // authentication
+            app.UseAuthentication();
             app.UseMvc();
         }
     }
