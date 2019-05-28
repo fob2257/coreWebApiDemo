@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using coreWebApiDemo.Models.DAL;
 using coreWebApiDemo.Models.DAL.Entities;
 using coreWebApiDemo.Services;
+using coreWebApiDemo.Helpers;
 
 namespace coreWebApiDemo.Controllers
 {
@@ -23,7 +24,9 @@ namespace coreWebApiDemo.Controllers
             this.classService = classService;
         }
 
+        [HttpGet("list")]
         [HttpGet]
+        [ServiceFilter(typeof(MyActionFilter))]
         public ActionResult<IEnumerable<Author>> Get()
         {
             classService.DoSomething("ayyyylmao");

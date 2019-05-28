@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 using coreWebApiDemo.Models.DAL;
 using coreWebApiDemo.Services;
+using coreWebApiDemo.Helpers;
 
 namespace coreWebApiDemo
 {
@@ -36,6 +37,7 @@ namespace coreWebApiDemo
             // services
             //services.AddTransient<ClassService>();
             services.AddTransient<IClassService, ClassService>();
+            services.AddScoped<MyActionFilter>();
 
             // caching
             services.AddResponseCaching();
