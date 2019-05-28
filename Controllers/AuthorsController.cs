@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 using coreWebApiDemo.Models.DAL;
 using coreWebApiDemo.Models.DAL.Entities;
+using coreWebApiDemo.Services;
 
 namespace coreWebApiDemo.Controllers
 {
@@ -15,21 +16,31 @@ namespace coreWebApiDemo.Controllers
     public class AuthorsController : ControllerBase
     {
         private readonly ApplicationDbContext context;
-        public AuthorsController(ApplicationDbContext context)
+        private readonly IClassService classService;
+        public AuthorsController(ApplicationDbContext context, IClassService classService)
         {
             this.context = context;
+            this.classService = classService;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<Author>> Get()
         {
+            classService.DoSomething("ayyyylmao");
             return context.Authors.ToList();
         }
 
-        [HttpGet("{id}", Name = "GetAuthor")]
-        public ActionResult<Author> GetById(int id)
+        [HttpGet("first")]
+        [HttpGet("/first")]
+        public ActionResult<Author> GetFirst()
         {
-            var author = context.Authors.FirstOrDefault(a => a.Id == id);
+            return context.Authors.FirstOrDefault();
+        }
+
+        [HttpGet("{id}", Name = "GetAuthor")]
+        public async Task<ActionResult<Author>> GetById(int id)
+        {
+            var author = await context.Authors.FirstOrDefaultAsync(a => a.Id == id);
 
             if (author == null)
             {
@@ -56,7 +67,7 @@ namespace coreWebApiDemo.Controllers
         [HttpPut("{id}")]
         public ActionResult Put(int id, [FromBody] Author author)
         {
-            if(id != author.Id)
+            if (id != author.Id)
             {
                 return BadRequest();
             }
@@ -71,7 +82,7 @@ namespace coreWebApiDemo.Controllers
         {
             var author = context.Authors.FirstOrDefault(a => a.Id == id);
 
-            if(author == null)
+            if (author == null)
             {
                 return NotFound();
             }

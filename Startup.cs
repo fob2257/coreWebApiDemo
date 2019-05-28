@@ -11,8 +11,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 using coreWebApiDemo.Models.DAL;
+using coreWebApiDemo.Services;
 
 namespace coreWebApiDemo
 {
@@ -30,6 +32,17 @@ namespace coreWebApiDemo
         {
             services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+            // services
+            //services.AddTransient<ClassService>();
+            services.AddTransient<IClassService, ClassService>();
+
+            //// caching
+            //services.AddResponseCaching();
+
+            //// authentication
+            //services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            //    .AddJwtBearer();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                 .AddJsonOptions(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
@@ -49,6 +62,10 @@ namespace coreWebApiDemo
             }
 
             app.UseHttpsRedirection();
+            //// caching
+            //app.UseResponseCaching();
+            //// authentication
+            //app.UseAuthentication();
             app.UseMvc();
         }
     }
