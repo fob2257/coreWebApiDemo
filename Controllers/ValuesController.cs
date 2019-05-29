@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace coreWebApiDemo.Controllers
 {
@@ -11,6 +12,19 @@ namespace coreWebApiDemo.Controllers
     [ApiController]
     public class ValuesController : ControllerBase
     {
+        private readonly IConfiguration configuration;
+
+        public ValuesController(IConfiguration configuration)
+        {
+            this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        }
+
+        [HttpGet("message")]
+        public ActionResult<string> GetMessage()
+        {
+            return configuration["message"];
+        }
+
         [HttpGet("cache")]
         [ResponseCache(Duration = 15)]
         [Authorize]

@@ -19,6 +19,20 @@ namespace coreWebApiDemo
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+            .ConfigureAppConfiguration((env, config) =>
+            {
+                var environment = env.HostingEnvironment.EnvironmentName;
+
+                config.AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true);
+                config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
+                config.AddEnvironmentVariables();
+
+                if(args != null)
+                {
+                    config.AddCommandLine(args);
+                }
+            })
                 .UseStartup<Startup>();
     }
 }
