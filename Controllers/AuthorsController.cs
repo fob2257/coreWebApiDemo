@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 
 using coreWebApiDemo.Models.DAL;
+using coreWebApiDemo.Models.DTO;
 using coreWebApiDemo.Models.DAL.Entities;
 using coreWebApiDemo.Services;
 using coreWebApiDemo.Helpers;
@@ -18,19 +20,26 @@ namespace coreWebApiDemo.Controllers
     {
         private readonly ApplicationDbContext context;
         private readonly IClassService classService;
-        public AuthorsController(ApplicationDbContext context, IClassService classService)
+        private readonly IMapper mapper;
+        public AuthorsController(ApplicationDbContext context, IClassService classService, IMapper mapper)
         {
             this.context = context;
             this.classService = classService;
+            this.mapper = mapper;
         }
 
         [HttpGet("list")]
         [HttpGet]
         [ServiceFilter(typeof(MyActionFilter))]
-        public ActionResult<IEnumerable<Author>> Get()
+        public async Task<ActionResult<IEnumerable<AuthorDTO>>> Get()
         {
             classService.DoSomething("ayyyylmao");
-            return context.Authors.ToList();
+            var authors = await context.Authors
+                .Include(a => a.Books)
+                .ToListAsync();
+            var authorsDto = mapper.Map<List<AuthorDTO>>(authors);
+
+            return authorsDto;
         }
 
         [HttpGet("first")]
@@ -41,7 +50,7 @@ namespace coreWebApiDemo.Controllers
         }
 
         [HttpGet("{id}", Name = "GetAuthor")]
-        public async Task<ActionResult<Author>> GetById(int id)
+        public async Task<ActionResult<AuthorDTO>> GetById(int id)
         {
             var author = await context.Authors.FirstOrDefaultAsync(a => a.Id == id);
 
@@ -50,21 +59,27 @@ namespace coreWebApiDemo.Controllers
                 return NotFound();
             }
 
-            return author;
+            var authorDto = mapper.Map<AuthorDTO>(author);
+
+            return authorDto;
         }
 
         [HttpPost]
-        public ActionResult Post([FromBody] Author author)
+        public async Task<ActionResult> Post([FromBody] AuthorDTO_POST authorPost)
         {
             //if (!ModelState.IsValid)
             //{
             //    return BadRequest(ModelState);
             //}
 
-            context.Authors.Add(new Author { Name = author.Name });
-            context.SaveChanges();
+            var author = mapper.Map<Author>(authorPost);
 
-            return new CreatedAtRouteResult("GetAuthor", new { id = author.Id }, author);
+            context.Authors.Add(author);
+            await context.SaveChangesAsync();
+
+            var authorDto = mapper.Map<AuthorDTO>(author);
+
+            return new CreatedAtRouteResult("GetAuthor", new { id = author.Id }, authorDto);
         }
 
         [HttpPut("{id}")]

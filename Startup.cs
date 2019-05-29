@@ -12,8 +12,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using AutoMapper;
 
 using coreWebApiDemo.Models.DAL;
+using coreWebApiDemo.Models.DTO;
+using coreWebApiDemo.Models.DAL.Entities;
 using coreWebApiDemo.Services;
 using coreWebApiDemo.Helpers;
 
@@ -31,6 +34,12 @@ namespace coreWebApiDemo
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // automapper
+            services.AddAutoMapper(options =>
+            {
+                options.CreateMap<AuthorDTO_POST, Author>();
+            });
+
             services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
