@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 
 using coreWebApiDemo.Models.DAL;
 using coreWebApiDemo.Models.DTO;
@@ -83,31 +84,61 @@ namespace coreWebApiDemo.Controllers
         }
 
         [HttpPut("{id}")]
-        public ActionResult Put(int id, [FromBody] Author author)
+        public async Task<ActionResult> Put(int id, [FromBody] AuthorDTO_PUT authorPut)
         {
-            if (id != author.Id)
+            var author = mapper.Map<Author>(authorPut);
+            author.Id = id;
+
+            context.Entry(author).State = EntityState.Modified;
+            await context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<ActionResult> Patch(int id, [FromBody] JsonPatchDocument<Author> patchDocument)
+        {
+            if (patchDocument == null)
             {
                 return BadRequest();
             }
 
-            context.Entry(author).State = EntityState.Modified;
-            context.SaveChanges();
-            return Ok();
-        }
-
-        [HttpDelete("{id}")]
-        public ActionResult<Author> Delete(int id)
-        {
-            var author = context.Authors.FirstOrDefault(a => a.Id == id);
+            var author = await context.Authors.FirstOrDefaultAsync(a => a.Id == id);
 
             if (author == null)
             {
                 return NotFound();
             }
 
-            context.Authors.Remove(author);
+            patchDocument.ApplyTo(author, ModelState);
+
+
+            var isValid = TryValidateModel(author);
+
+            if (!isValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            await context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<Author>> Delete(int id)
+        {
+            var authorId = await context.Authors
+                .Select(a => a.Id)
+                .FirstOrDefaultAsync(Id => Id == id);
+
+            if (authorId == default(int))
+            {
+                return NotFound();
+            }
+
+            context.Authors.Remove(new Author { Id = authorId });
             context.SaveChanges();
-            return author;
+            return NoContent();
         }
     }
 }

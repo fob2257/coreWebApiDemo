@@ -38,6 +38,7 @@ namespace coreWebApiDemo
             services.AddAutoMapper(options =>
             {
                 options.CreateMap<AuthorDTO_POST, Author>();
+                options.CreateMap<AuthorDTO_PUT, Author>();
             });
 
             services.AddDbContext<ApplicationDbContext>(options =>
