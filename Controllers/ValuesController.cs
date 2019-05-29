@@ -11,7 +11,7 @@ namespace coreWebApiDemo.Controllers
     [ApiController]
     public class ValuesController : ControllerBase
     {
-        [HttpGet]
+        [HttpGet("cache")]
         [ResponseCache(Duration = 15)]
         [Authorize]
         public ActionResult<string> GetSeconds()

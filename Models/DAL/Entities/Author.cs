@@ -13,7 +13,7 @@ namespace coreWebApiDemo.Models.DAL.Entities
         public int Id { get; set; }
         [Required]
         // attribute validation
-        //[FirstLetter]
+        [FirstLetter]
         [StringLength(10, ErrorMessage = "Name must have {1} character(s) or less")]
         public string Name { get; set; }
         [Range(18, 100)]
@@ -35,7 +35,6 @@ namespace coreWebApiDemo.Models.DAL.Entities
                     yield return new ValidationResult("First letter must be capitalized", new string[] { nameof(Name) });
                 }
             }
-            throw new NotImplementedException();
         }
     }
 }
