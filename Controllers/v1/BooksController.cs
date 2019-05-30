@@ -8,9 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using coreWebApiDemo.Models.DAL;
 using coreWebApiDemo.Models.DAL.Entities;
 
-namespace coreWebApiDemo.Controllers
+namespace coreWebApiDemo.Controllers.v1
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class BooksController : ControllerBase
     {

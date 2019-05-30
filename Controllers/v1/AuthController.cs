@@ -14,9 +14,9 @@ using Microsoft.IdentityModel.Tokens;
 using coreWebApiDemo.Models.DAL.Entities;
 using coreWebApiDemo.Models.DTO;
 
-namespace coreWebApiDemo.Controllers
+namespace coreWebApiDemo.Controllers.v1
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {

@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using AutoMapper;
+using Swashbuckle.AspNetCore.Swagger;
 
 using coreWebApiDemo.Models.DAL;
 using coreWebApiDemo.Models.DTO;
@@ -37,6 +38,16 @@ namespace coreWebApiDemo
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // DB Context
+            services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlServer(Configuration.GetConnectionString("SQLServer")));
+
+            // services
+            //services.AddTransient<ClassService>();
+            services.AddTransient<IClassService, ClassService>();
+            services.AddScoped<HashService>();
+            services.AddScoped<MyActionFilter>();
+
             // automapper
             services.AddAutoMapper(options =>
             {
@@ -47,15 +58,23 @@ namespace coreWebApiDemo
             // encryptation
             services.AddDataProtection();
 
-            // DB Context
-            services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(Configuration.GetConnectionString("SQLServer")));
+            // swagger
+            services.AddSwaggerGen(config =>
+            {
+                config.SwaggerDoc("v1", new Info
+                {
+                    Title = "My Web API",
+                    Version = "v1",
+                    Description = "This is a description"
+                });
 
-            // services
-            //services.AddTransient<ClassService>();
-            services.AddTransient<IClassService, ClassService>();
-            services.AddScoped<HashService>();
-            services.AddScoped<MyActionFilter>();
+                config.SwaggerDoc("v2", new Info
+                {
+                    Title = "My Web API v2",
+                    Version = "v2",
+                    Description = "This is a description for version 2"
+                });
+            });
 
             // caching
             services.AddResponseCaching();
@@ -86,6 +105,7 @@ namespace coreWebApiDemo
                 .AddMvc(options =>
                 {
                     options.Filters.Add(new MyExceptionFilter());
+                    options.Conventions.Add(new ApiExplorerGroupPerVersionConvention());
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                 .AddJsonOptions(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
@@ -103,6 +123,15 @@ namespace coreWebApiDemo
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            // swagger json
+            app.UseSwagger();
+            // swagger ui assets
+            app.UseSwaggerUI(config =>
+            {
+                config.SwaggerEndpoint("/swagger/v1/swagger.json", "My API v1");
+                config.SwaggerEndpoint("/swagger/v2/swagger.json", "My API v2");
+            });
 
             app.UseHttpsRedirection();
             // caching

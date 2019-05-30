@@ -11,9 +11,9 @@ using Microsoft.Extensions.Configuration;
 
 using coreWebApiDemo.Services;
 
-namespace coreWebApiDemo.Controllers
+namespace coreWebApiDemo.Controllers.v2
 {
-    [Route("api/[controller]")]
+    [Route("api/v2/[controller]")]
     [ApiController]
     public class ValuesController : ControllerBase
     {

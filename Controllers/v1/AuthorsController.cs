@@ -13,9 +13,11 @@ using coreWebApiDemo.Models.DAL.Entities;
 using coreWebApiDemo.Services;
 using coreWebApiDemo.Helpers;
 
-namespace coreWebApiDemo.Controllers
+[assembly: ApiConventionType(typeof(DefaultApiConventions))]
+
+namespace coreWebApiDemo.Controllers.v1
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class AuthorsController : ControllerBase
     {
@@ -29,8 +31,8 @@ namespace coreWebApiDemo.Controllers
             this.mapper = mapper;
         }
 
-        [HttpGet("list")]
         [HttpGet]
+        [HttpGet("list")]
         [ServiceFilter(typeof(MyActionFilter))]
         public async Task<ActionResult<IEnumerable<AuthorDTO>>> Get(int page = 1, int totalRows = 25)
         {
@@ -61,7 +63,7 @@ namespace coreWebApiDemo.Controllers
             return context.Authors.FirstOrDefault();
         }
 
-        [HttpGet("{id}", Name = "GetAuthor")]
+        [HttpGet("{id}", Name = "GetAuthorV1")]
         public async Task<ActionResult<AuthorDTO>> GetById(int id)
         {
             var author = await context.Authors.FirstOrDefaultAsync(a => a.Id == id);
@@ -91,7 +93,7 @@ namespace coreWebApiDemo.Controllers
 
             var authorDto = mapper.Map<AuthorDTO>(author);
 
-            return new CreatedAtRouteResult("GetAuthor", new { id = author.Id }, authorDto);
+            return new CreatedAtRouteResult("GetAuthorV1", new { id = author.Id }, authorDto);
         }
 
         [HttpPut("{id}")]
@@ -135,6 +137,10 @@ namespace coreWebApiDemo.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Deletes a specific Author.
+        /// </summary>
+        /// <param name="id">Id of the author to delete</param>
         [HttpDelete("{id}")]
         public async Task<ActionResult<Author>> Delete(int id)
         {
