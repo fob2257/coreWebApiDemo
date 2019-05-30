@@ -55,6 +55,9 @@ namespace coreWebApiDemo
             // caching
             services.AddResponseCaching();
 
+            // cors
+            services.AddCors();
+
             // authentication
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
@@ -101,6 +104,12 @@ namespace coreWebApiDemo
             app.UseResponseCaching();
             // authentication
             app.UseAuthentication();
+            // cors
+            app.UseCors(builder =>
+            builder
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod());
             app.UseMvc();
         }
     }
