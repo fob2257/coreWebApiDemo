@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
+using coreWebApiDemo.Services;
+
 namespace coreWebApiDemo.Controllers
 {
     [Route("api/[controller]")]
@@ -17,11 +19,32 @@ namespace coreWebApiDemo.Controllers
     {
         private readonly IConfiguration configuration;
         private readonly IDataProtector protector;
+        private readonly HashService hashService;
 
-        public ValuesController(IConfiguration configuration, IDataProtectionProvider protectionProvider)
+        public ValuesController(
+            IConfiguration configuration,
+            IDataProtectionProvider protectionProvider,
+            HashService hashService
+            )
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.protector = protectionProvider.CreateProtector("YouShouldNeverEverEverEverTellAnyoneYourSecrets");
+            this.hashService = hashService;
+        }
+
+        [HttpGet("hash")]
+        public ActionResult<string> GetHash()
+        {
+            string plainText = "Lorem Ipsum Dolor Sit Amet";
+            var hash = hashService.Hash(plainText);
+
+            var result = new
+            {
+                plainText,
+                hash,
+            };
+
+            return Ok(result);
         }
 
         [HttpGet("encryption")]

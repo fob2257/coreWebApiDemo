@@ -54,6 +54,7 @@ namespace coreWebApiDemo
             // services
             //services.AddTransient<ClassService>();
             services.AddTransient<IClassService, ClassService>();
+            services.AddScoped<HashService>();
             services.AddScoped<MyActionFilter>();
 
             // caching
