@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
@@ -14,10 +16,36 @@ namespace coreWebApiDemo.Controllers
     public class ValuesController : ControllerBase
     {
         private readonly IConfiguration configuration;
+        private readonly IDataProtector protector;
 
-        public ValuesController(IConfiguration configuration)
+        public ValuesController(IConfiguration configuration, IDataProtectionProvider protectionProvider)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            this.protector = protectionProvider.CreateProtector("YouShouldNeverEverEverEverTellAnyoneYourSecrets");
+        }
+
+        [HttpGet("encryption")]
+        public ActionResult<string> GetEncryption()
+        {
+            string plainText = "Lorem Ipsum Dolor Sit Amet";
+            string encryptedText = protector.Protect(plainText);
+            string decryptedText = protector.Unprotect(encryptedText);
+
+            //var protectorTimeLimit = protector.ToTimeLimitedDataProtector();
+            //string encryptedTextLimitedByTime = protectorTimeLimit.Protect(plainText, TimeSpan.FromSeconds(5));
+            //Thread.Sleep(6000);
+            //string decryptedTextLimitedByTime = protectorTimeLimit.Unprotect(encryptedTextLimitedByTime);
+
+            var result = new
+            {
+                plainText,
+                encryptedText,
+                decryptedText,
+                //encryptedTextLimitedByTime,
+                //decryptedTextLimitedByTime
+            };
+
+            return Ok(result);
         }
 
         [HttpGet("message")]

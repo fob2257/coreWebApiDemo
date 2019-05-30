@@ -44,6 +44,10 @@ namespace coreWebApiDemo
                 options.CreateMap<AuthorDTO_PUT, Author>();
             });
 
+            // encryptation
+            services.AddDataProtection();
+
+            // DB Context
             services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("SQLServer")));
 
