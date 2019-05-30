@@ -32,13 +32,24 @@ namespace coreWebApiDemo.Controllers
         [HttpGet("list")]
         [HttpGet]
         [ServiceFilter(typeof(MyActionFilter))]
-        public async Task<ActionResult<IEnumerable<AuthorDTO>>> Get()
+        public async Task<ActionResult<IEnumerable<AuthorDTO>>> Get(int page = 1, int totalRows = 25)
         {
             classService.DoSomething("ayyyylmao");
-            var authors = await context.Authors
+
+            var query = context.Authors.AsQueryable();
+
+            var total = query.Count();
+
+            var authors = await query
+                .Skip(totalRows * (page - 1))
+                .Take(totalRows)
                 .Include(a => a.Books)
                 .ToListAsync();
             var authorsDto = mapper.Map<List<AuthorDTO>>(authors);
+
+            Response.Headers["X-Total-Rows"] = total.ToString();
+            Response.Headers["X-Total-Pages"] =
+                ((int)Math.Ceiling((double)total / totalRows)).ToString();
 
             return authorsDto;
         }
