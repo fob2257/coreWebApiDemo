@@ -10,8 +10,8 @@ using Microsoft.AspNetCore.JsonPatch;
 using coreWebApiDemo.Models.DAL;
 using coreWebApiDemo.Models.DTO;
 using coreWebApiDemo.Models.DAL.Entities;
-using coreWebApiDemo.Services;
-using coreWebApiDemo.Helpers;
+using coreWebApiDemo.Business.Helpers;
+using coreWebApiDemo.Business.Services;
 
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
 
@@ -22,22 +22,32 @@ namespace coreWebApiDemo.Controllers.v1
     public class AuthorsController : ControllerBase
     {
         private readonly ApplicationDbContext context;
-        private readonly IClassService classService;
+        private readonly IDIService diService;
         private readonly IMapper mapper;
-        public AuthorsController(ApplicationDbContext context, IClassService classService, IMapper mapper)
+
+        public AuthorsController(ApplicationDbContext context, IDIService diService, IMapper mapper)
         {
             this.context = context;
-            this.classService = classService;
+            this.diService = diService;
             this.mapper = mapper;
         }
 
+        // GET: api/caching
+        [HttpGet("/api/caching")]
+        [ResponseCache(Duration = 15)]
+        public ActionResult<DateTime> GetTime() => DateTime.UtcNow;
+
+        // GET: api/dependency-injection
+        [HttpGet("/api/dependency-injection")]
+        public ActionResult<string> GetDI() => diService.DoSomethingMethod("ayyylmao");
+
+        // GET: api/Authors
+        // GET: api/Authors/list
         [HttpGet]
         [HttpGet("list")]
         [ServiceFilter(typeof(MyActionFilter))]
         public async Task<ActionResult<IEnumerable<AuthorDTO>>> Get(int page = 1, int totalRows = 25)
         {
-            classService.DoSomething("ayyyylmao");
-
             var query = context.Authors.AsQueryable();
 
             var total = query.Count();
@@ -56,6 +66,8 @@ namespace coreWebApiDemo.Controllers.v1
             return authorsDto;
         }
 
+        // GET: api/Authors/first
+        // GET: first
         [HttpGet("first")]
         [HttpGet("/first")]
         public ActionResult<Author> GetFirst()
@@ -63,6 +75,7 @@ namespace coreWebApiDemo.Controllers.v1
             return context.Authors.FirstOrDefault();
         }
 
+        // GET: api/Authors/5
         [HttpGet("{id}", Name = "GetAuthorV1")]
         public async Task<ActionResult<AuthorDTO>> GetById(int id)
         {
@@ -78,6 +91,7 @@ namespace coreWebApiDemo.Controllers.v1
             return authorDto;
         }
 
+        // POST: api/Authors
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] AuthorDTO_POST authorPost)
         {
@@ -96,6 +110,7 @@ namespace coreWebApiDemo.Controllers.v1
             return new CreatedAtRouteResult("GetAuthorV1", new { id = author.Id }, authorDto);
         }
 
+        // PUT: api/Authors/5
         [HttpPut("{id}")]
         public async Task<ActionResult> Put(int id, [FromBody] AuthorDTO_PUT authorPut)
         {
@@ -107,6 +122,7 @@ namespace coreWebApiDemo.Controllers.v1
             return NoContent();
         }
 
+        // PATCH: api/Authors/5
         [HttpPatch("{id}")]
         public async Task<ActionResult> Patch(int id, [FromBody] JsonPatchDocument<Author> patchDocument)
         {
@@ -137,6 +153,7 @@ namespace coreWebApiDemo.Controllers.v1
             return NoContent();
         }
 
+        // DELETE: api/ApiWithActions/5
         /// <summary>
         /// Deletes a specific Author.
         /// </summary>

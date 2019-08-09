@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 
-using coreWebApiDemo.Services;
+using coreWebApiDemo.Business.Services;
 
 namespace coreWebApiDemo.Controllers.v2
 {
@@ -19,12 +19,12 @@ namespace coreWebApiDemo.Controllers.v2
     {
         private readonly IConfiguration configuration;
         private readonly IDataProtector protector;
-        private readonly HashService hashService;
+        private readonly IHashService hashService;
 
         public ValuesController(
             IConfiguration configuration,
             IDataProtectionProvider protectionProvider,
-            HashService hashService
+            IHashService hashService
             )
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -36,7 +36,7 @@ namespace coreWebApiDemo.Controllers.v2
         public ActionResult<string> GetHash()
         {
             string plainText = "Lorem Ipsum Dolor Sit Amet";
-            var hash = hashService.Hash(plainText);
+            var hash = hashService.HashString(plainText);
 
             var result = new
             {

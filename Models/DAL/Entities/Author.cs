@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-using coreWebApiDemo.Helpers;
+using coreWebApiDemo.Business.Helpers;
 
 namespace coreWebApiDemo.Models.DAL.Entities
 {

@@ -21,8 +21,8 @@ using Swashbuckle.AspNetCore.Swagger;
 using coreWebApiDemo.Models.DAL;
 using coreWebApiDemo.Models.DTO;
 using coreWebApiDemo.Models.DAL.Entities;
-using coreWebApiDemo.Services;
-using coreWebApiDemo.Helpers;
+using coreWebApiDemo.Business.Services;
+using coreWebApiDemo.Business.Helpers;
 
 namespace coreWebApiDemo
 {
@@ -42,23 +42,17 @@ namespace coreWebApiDemo
             services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("SQLServer")));
 
-            // services
-            //services.AddTransient<ClassService>();
-            services.AddTransient<IClassService, ClassService>();
-            services.AddScoped<HashService>();
-            services.AddScoped<MyActionFilter>();
-
-            // automapper
+            // Automapper Service
             services.AddAutoMapper(options =>
             {
                 options.CreateMap<AuthorDTO_POST, Author>();
                 options.CreateMap<AuthorDTO_PUT, Author>();
             });
 
-            // encryptation
+            // Encryptation Service
             services.AddDataProtection();
 
-            // swagger
+            // Swagger Service
             services.AddSwaggerGen(config =>
             {
                 config.SwaggerDoc("v1", new Info
@@ -76,13 +70,13 @@ namespace coreWebApiDemo
                 });
             });
 
-            // caching
+            // Caching Service
             services.AddResponseCaching();
 
-            // cors
+            // Cors Service
             services.AddCors();
 
-            // authentication
+            // Authentication Service
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 options.TokenValidationParameters = new TokenValidationParameters
@@ -96,10 +90,17 @@ namespace coreWebApiDemo
                     ClockSkew = TimeSpan.Zero
                 });
 
-            // identity
+            // Identity Service
             services.AddIdentity<User, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
+
+            // Services
+            services.AddTransient<IDIService, DIService>();
+            services.AddTransient<IHashService, HashService>();
+            services.AddScoped<MyActionFilter>();
+            //services.AddTransient<Microsoft.Extensions.Hosting.IHostedService, WriteToFileHostedService>();
+            services.AddTransient<Microsoft.Extensions.Hosting.IHostedService, ConsumeScopedServiceHostedService>();
 
             services
                 .AddMvc(options =>
@@ -124,9 +125,10 @@ namespace coreWebApiDemo
                 app.UseHsts();
             }
 
-            // swagger json
+            // Swagger JSON
             app.UseSwagger();
-            // swagger ui assets
+
+            // Swagger UI Assets
             app.UseSwaggerUI(config =>
             {
                 config.SwaggerEndpoint("/swagger/v1/swagger.json", "My API v1");
@@ -134,16 +136,20 @@ namespace coreWebApiDemo
             });
 
             app.UseHttpsRedirection();
-            // caching
+
+            // Caching
             app.UseResponseCaching();
-            // authentication
+
+            // Authentication
             app.UseAuthentication();
-            // cors
+
+            // Cors
             app.UseCors(builder =>
             builder
             .AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod());
+
             app.UseMvc();
         }
     }

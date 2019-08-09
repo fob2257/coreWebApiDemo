@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace coreWebApiDemo.Helpers
+namespace coreWebApiDemo.Business.Helpers
 {
     public class ApiExplorerGroupPerVersionConvention : IControllerModelConvention
     {

@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
 using coreWebApiDemo.Models.DTO;
 
-namespace coreWebApiDemo.Services
+namespace coreWebApiDemo.Business.Services
 {
-    public class HashService
+    public class HashService : IHashService
     {
-        public HashResult Hash(string input)
+        public HashResult HashString(string input)
         {
             byte[] salt = new byte[128 / 8];
 
@@ -23,7 +23,7 @@ namespace coreWebApiDemo.Services
             return Hash(input, salt);
         }
 
-        public HashResult Hash(string input, byte[] salt)
+        private HashResult Hash(string input, byte[] salt)
         {
             string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
                 password: input,

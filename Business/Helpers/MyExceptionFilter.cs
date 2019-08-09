@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace coreWebApiDemo.Helpers
+namespace coreWebApiDemo.Business.Helpers
 {
     public class MyExceptionFilter : ExceptionFilterAttribute
     {
