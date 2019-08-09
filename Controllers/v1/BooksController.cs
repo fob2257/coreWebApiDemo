@@ -4,48 +4,77 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 using coreWebApiDemo.Models.DAL;
 using coreWebApiDemo.Models.DAL.Entities;
+using coreWebApiDemo.Models.DTO;
 
 namespace coreWebApiDemo.Controllers.v1
 {
     [Route("api/v1/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class BooksController : ControllerBase
     {
         private readonly ApplicationDbContext context;
-        public BooksController(ApplicationDbContext context)
+        private readonly IMapper mapper;
+
+        public BooksController(ApplicationDbContext context, IMapper mapper)
         {
             this.context = context;
+            this.mapper = mapper;
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Book>> Get()
+        public async Task<ActionResult<IEnumerable<BookDTO>>> Get(int page = 1, int totalRows = 25)
         {
-            return context.Books.Include(a => a.Author).ToList();
+            var query = context.Books.AsQueryable();
+
+            var total = await query.CountAsync();
+
+            var books = await query
+                .Skip(totalRows * (page - 1))
+                .Take(totalRows)
+                .Include(a => a.Author)
+                .ToListAsync();
+
+            var booksDTO = mapper.Map<List<BookDTO>>(books);
+
+            Response.Headers["X-Total-Rows"] = total.ToString();
+            Response.Headers["X-Total-Pages"] = ((int)Math.Ceiling((double)total / totalRows)).ToString();
+
+            return booksDTO;
         }
 
-        [HttpGet("{id}", Name = "GetBook")]
-        public ActionResult<Book> GetById(int id)
+        [HttpGet("{id}", Name = "GetBookV1")]
+        public async Task<ActionResult<BookDTO>> GetById(int id)
         {
-            var book = context.Books.FirstOrDefault(a => a.Id == id);
+            var book = await context.Books.FirstOrDefaultAsync(a => a.Id == id);
 
             if (book == null)
             {
                 return NotFound();
             }
 
-            return book;
+            var bookDTO = mapper.Map<BookDTO>(book);
+
+            return bookDTO;
         }
 
         [HttpPost]
-        public ActionResult Post([FromBody] Book book)
+        public async Task<ActionResult> Post([FromBody] BookDTO_POST body)
         {
-            context.Books.Add(new Book { Title = book.Title, AuthorId = book.AuthorId });
-            context.SaveChanges();
+            var book = mapper.Map<Book>(body);
 
-            return new CreatedAtRouteResult("GetBook", new { id = book.Id }, book);
+            context.Books.Add(book);
+            await context.SaveChangesAsync();
+
+            var bookDTO = mapper.Map<BookDTO>(book);
+
+            return new CreatedAtRouteResult("GetBookV1", new { id = book.Id }, bookDTO);
         }
     }
 }

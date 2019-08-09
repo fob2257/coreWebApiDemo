@@ -40,13 +40,14 @@ namespace coreWebApiDemo
         {
             // DB Context
             services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(Configuration.GetConnectionString("SQLServer")));
+            options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             // Automapper Service
             services.AddAutoMapper(options =>
             {
                 options.CreateMap<AuthorDTO_POST, Author>();
                 options.CreateMap<AuthorDTO_PUT, Author>();
+                options.CreateMap<BookDTO_POST, Book>();
             });
 
             // Encryptation Service
@@ -100,7 +101,7 @@ namespace coreWebApiDemo
             services.AddTransient<IHashService, HashService>();
             services.AddScoped<MyActionFilter>();
             //services.AddTransient<Microsoft.Extensions.Hosting.IHostedService, WriteToFileHostedService>();
-            services.AddTransient<Microsoft.Extensions.Hosting.IHostedService, ConsumeScopedServiceHostedService>();
+            //services.AddTransient<Microsoft.Extensions.Hosting.IHostedService, ConsumeScopedServiceHostedService>();
 
             services
                 .AddMvc(options =>

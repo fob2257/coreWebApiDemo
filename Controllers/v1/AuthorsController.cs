@@ -6,12 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 using coreWebApiDemo.Models.DAL;
 using coreWebApiDemo.Models.DTO;
 using coreWebApiDemo.Models.DAL.Entities;
 using coreWebApiDemo.Business.Helpers;
-using coreWebApiDemo.Business.Services;
 
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
 
@@ -19,27 +20,17 @@ namespace coreWebApiDemo.Controllers.v1
 {
     [Route("api/v1/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class AuthorsController : ControllerBase
     {
         private readonly ApplicationDbContext context;
-        private readonly IDIService diService;
         private readonly IMapper mapper;
 
-        public AuthorsController(ApplicationDbContext context, IDIService diService, IMapper mapper)
+        public AuthorsController(ApplicationDbContext context, IMapper mapper)
         {
             this.context = context;
-            this.diService = diService;
             this.mapper = mapper;
         }
-
-        // GET: api/caching
-        [HttpGet("/api/caching")]
-        [ResponseCache(Duration = 15)]
-        public ActionResult<DateTime> GetTime() => DateTime.UtcNow;
-
-        // GET: api/dependency-injection
-        [HttpGet("/api/dependency-injection")]
-        public ActionResult<string> GetDI() => diService.DoSomethingMethod("ayyylmao");
 
         // GET: api/Authors
         // GET: api/Authors/list
@@ -57,23 +48,18 @@ namespace coreWebApiDemo.Controllers.v1
                 .Take(totalRows)
                 .Include(a => a.Books)
                 .ToListAsync();
-            var authorsDto = mapper.Map<List<AuthorDTO>>(authors);
+            var authorsDTO = mapper.Map<List<AuthorDTO>>(authors);
 
             Response.Headers["X-Total-Rows"] = total.ToString();
             Response.Headers["X-Total-Pages"] =
                 ((int)Math.Ceiling((double)total / totalRows)).ToString();
 
-            return authorsDto;
+            return authorsDTO;
         }
 
         // GET: api/Authors/first
-        // GET: first
         [HttpGet("first")]
-        [HttpGet("/first")]
-        public ActionResult<Author> GetFirst()
-        {
-            return context.Authors.FirstOrDefault();
-        }
+        public async Task<ActionResult<AuthorDTO>> GetFirst() => mapper.Map<AuthorDTO>(await context.Authors.FirstOrDefaultAsync());
 
         // GET: api/Authors/5
         [HttpGet("{id}", Name = "GetAuthorV1")]
@@ -86,9 +72,9 @@ namespace coreWebApiDemo.Controllers.v1
                 return NotFound();
             }
 
-            var authorDto = mapper.Map<AuthorDTO>(author);
+            var authorDTO = mapper.Map<AuthorDTO>(author);
 
-            return authorDto;
+            return authorDTO;
         }
 
         // POST: api/Authors
@@ -105,9 +91,9 @@ namespace coreWebApiDemo.Controllers.v1
             context.Authors.Add(author);
             await context.SaveChangesAsync();
 
-            var authorDto = mapper.Map<AuthorDTO>(author);
+            var authorDTO = mapper.Map<AuthorDTO>(author);
 
-            return new CreatedAtRouteResult("GetAuthorV1", new { id = author.Id }, authorDto);
+            return new CreatedAtRouteResult("GetAuthorV1", new { id = author.Id }, authorDTO);
         }
 
         // PUT: api/Authors/5
@@ -159,19 +145,18 @@ namespace coreWebApiDemo.Controllers.v1
         /// </summary>
         /// <param name="id">Id of the author to delete</param>
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Author>> Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            var authorId = await context.Authors
-                .Select(a => a.Id)
-                .FirstOrDefaultAsync(Id => Id == id);
+            var author = await context.Authors.FirstOrDefaultAsync(a => a.Id == id);
 
-            if (authorId == default(int))
+            if (author == null)
             {
                 return NotFound();
             }
 
-            context.Authors.Remove(new Author { Id = authorId });
-            context.SaveChanges();
+            context.Authors.Remove(author);
+            await context.SaveChangesAsync();
+
             return NoContent();
         }
     }

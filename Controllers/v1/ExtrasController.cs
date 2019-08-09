@@ -1,36 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 
 using coreWebApiDemo.Business.Services;
 
-namespace coreWebApiDemo.Controllers.v2
+namespace coreWebApiDemo.Controllers.v1
 {
-    [Route("api/v2/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
-    public class ValuesController : ControllerBase
+    public class ExtrasController : ControllerBase
     {
         private readonly IConfiguration configuration;
         private readonly IDataProtector protector;
         private readonly IHashService hashService;
+        private readonly IDIService diService;
 
-        public ValuesController(
+        public ExtrasController(
             IConfiguration configuration,
             IDataProtectionProvider protectionProvider,
-            IHashService hashService
-            )
+            IHashService hashService,
+            IDIService diService)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.protector = protectionProvider.CreateProtector("YouShouldNeverEverEverEverTellAnyoneYourSecrets");
             this.hashService = hashService;
+            this.diService = diService;
         }
+
+        // GET: api/caching
+        // GET: api/Extras/caching
+        [HttpGet("/api/caching")]
+        [HttpGet("caching")]
+        [ResponseCache(Duration = 15)]
+        public ActionResult<DateTime> GetDateTime() => DateTime.UtcNow;
+
+        // GET: api/dependency-injection
+        // GET: api/Extras/dependency-injection
+        [HttpGet("/api/dependency-injection")]
+        [HttpGet("dependency-injection")]
+        public ActionResult<string> GetDI() => diService.DoSomethingMethod("ayyylmao");
 
         [HttpGet("hash")]
         public ActionResult<string> GetHash()
@@ -71,51 +86,19 @@ namespace coreWebApiDemo.Controllers.v2
             return Ok(result);
         }
 
-        [HttpGet("message")]
-        public ActionResult<string> GetMessage()
-        {
-            return configuration["message"];
-        }
+        [HttpGet("configuration-message")]
+        public ActionResult<string> GetMessage() => configuration["message"];
 
-        [HttpGet("cache")]
+        [HttpGet("caching-auth")]
         [ResponseCache(Duration = 15)]
-        [Authorize]
-        public ActionResult<string> GetSeconds()
-        {
-            return DateTime.Now.Second.ToString();
-        }
-
-        // GET api/values
-        [HttpGet]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        public ActionResult<IEnumerable<string>> Get()
+        public ActionResult<DateTime> GetDateTimeAuth() => DateTime.UtcNow;
+
+        [HttpGet("check-bearer")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public ActionResult<IEnumerable<string>> Bearer()
         {
             return new string[] { "value1", "value2" };
-        }
-
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public ActionResult<string> Get(int id)
-        {
-            return "value";
-        }
-
-        // POST api/values
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
-
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
         }
     }
 }
