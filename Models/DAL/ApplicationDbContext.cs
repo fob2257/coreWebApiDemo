@@ -20,6 +20,6 @@ namespace coreWebApiDemo.Models.DAL
         public DbSet<Author> Authors { get; set; }
         public DbSet<Book> Books { get; set; }
         public DbSet<HostedServiceLog> HostedServiceLogs { get; set; }
-
+        public DbSet<AuthorBook> AuthorsBooks { get; set; }
     }
 }

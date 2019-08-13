@@ -9,7 +9,6 @@ namespace coreWebApiDemo.Models.DTO
     public class AuthorDTO
     {
         public int Id { get; set; }
-        [Required]
         public string Name { get; set; }
         public int Age { get; set; }
         public string Url { get; set; }

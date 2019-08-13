@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -21,7 +22,10 @@ namespace coreWebApiDemo.Models.DAL.Entities
         [Url]
         public string Url { get; set; }
 
-        public List<Book> Books { get; set; }
+        //public List<Book> Books { get; set; }
+        public List<AuthorBook> AuthorsBooks { get; set; }
+        [NotMapped]
+        public List<Book> Books { get { return (this.AuthorsBooks != null) ? this.AuthorsBooks.Select(o => o.Book).ToList() : new List<Book>(); } }
 
         // model validation
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

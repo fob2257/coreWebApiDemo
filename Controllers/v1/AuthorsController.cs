@@ -46,7 +46,8 @@ namespace coreWebApiDemo.Controllers.v1
             var authors = await query
                 .Skip(totalRows * (page - 1))
                 .Take(totalRows)
-                .Include(a => a.Books)
+                .Include(a => a.AuthorsBooks)
+                    .ThenInclude(a => a.Book)
                 .ToListAsync();
             var authorsDTO = mapper.Map<List<AuthorDTO>>(authors);
 
@@ -59,13 +60,19 @@ namespace coreWebApiDemo.Controllers.v1
 
         // GET: api/Authors/first
         [HttpGet("first")]
-        public async Task<ActionResult<AuthorDTO>> GetFirst() => mapper.Map<AuthorDTO>(await context.Authors.FirstOrDefaultAsync());
+        public async Task<ActionResult<AuthorDTO>> GetFirst() => mapper.Map<AuthorDTO>(await context.Authors
+            .Include(a => a.AuthorsBooks)
+                    .ThenInclude(a => a.Book)
+            .FirstOrDefaultAsync());
 
         // GET: api/Authors/5
         [HttpGet("{id}", Name = "GetAuthorV1")]
         public async Task<ActionResult<AuthorDTO>> GetById(int id)
         {
-            var author = await context.Authors.FirstOrDefaultAsync(a => a.Id == id);
+            var author = await context.Authors
+                .Include(a => a.AuthorsBooks)
+                    .ThenInclude(a => a.Book)
+                .FirstOrDefaultAsync(a => a.Id == id);
 
             if (author == null)
             {
